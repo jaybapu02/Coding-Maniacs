@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Survey AI – Create, Analyze, Improve</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-grid">
+      <div class="brand">
+        <div class="logo">🧠</div>
+        <div class="brand-text">
+          <h1>Omni Data <span class="ai-pill">AI</span></h1>
+          <p class="tagline">Create. Analyze. Improve.</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#builder">Builder</a>
+        <a href="#templates">Templates</a>
+        <a href="#process">Processing</a>
+        <a href="#dashboard">Dashboard</a>
+      </nav>
+      <div class="header-cta">
+        <button id="newSurveyBtn" class="btn btn-primary">New Survey</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <h2>Create custom surveys or start from curated templates</h2>
+        <p class="subtitle">
+          Automatically clean, process, and analyze responses in real-time using lightweight AI signals.
+          Detect negative feedback patterns and get actionable suggestions to boost CSAT, operations, and product quality.
+          Visualize insights in a beautiful interactive dashboard.
+        </p>
+        <div class="hero-actions">
+          <a href="#builder" class="btn btn-primary">Build a Survey</a>
+          <a href="#templates" class="btn btn-ghost">Browse Templates</a>
+        </div>
+        <ul class="hero-bullets">
+          <li>Realtime data cleaning & validation</li>
+          <li>Auto sentiment & keyword extraction</li>
+          <li>KPI cards and interactive charts</li>
+        </ul>
+      </div>
+      <div class="hero-art">
+        <div class="glass stats">
+          <div>
+            <span class="kpi-label">Responses</span>
+            <span id="kpiResponses" class="kpi-value">0</span>
+          </div>
+          <div>
+            <span class="kpi-label">Avg. Sentiment</span>
+            <span id="kpiSentiment" class="kpi-value">—</span>
+          </div>
+          <div>
+            <span class="kpi-label">Neg. Signals</span>
+            <span id="kpiNegSignals" class="kpi-value">0</span>
+          </div>
+        </div>
+        <div class="glass preview">
+          <h4 class="glass-title">Live Satisfaction</h4>
+          <canvas id="miniLine"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="builder" class="panel">
+    <div class="container">
+      <div class="panel-head">
+        <h3>Custom Survey Builder</h3>
+        <div class="row-actions">
+          <button id="saveSurveyBtn" class="btn btn-primary">Save Survey</button>
+          <button id="clearBuilderBtn" class="btn btn-ghost">Clear</button>
+        </div>
+      </div>
+
+      <form id="surveyForm" class="card">
+        <div class="form-row">
+          <label>Survey Title</label>
+          <input type="text" id="surveyTitle" placeholder="e.g., Customer Experience – Q3" required>
+        </div>
+
+        <div id="questionsList" class="q-list"></div>
+
+        <div class="q-controls">
+          <div class="q-add">
+            <select id="qType">
+              <option value="text">Open text</option>
+              <option value="rating">Rating (1–5)</option>
+              <option value="choice">Multiple choice</option>
+            </select>
+            <input id="qLabel" type="text" placeholder="Question label (e.g., How satisfied are you?)">
+            <input id="qOptions" type="text" placeholder="Choices (comma-separated)" class="hide">
+            <button type="button" id="addQuestionBtn" class="btn btn-primary">Add Question</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section id="templates" class="panel alt">
+    <div class="container">
+      <h3>Pre-built Survey Templates</h3>
+      <div id="templatesGrid" class="templates-grid"></div>
+    </div>
+  </section>
+
+  <section id="process" class="panel">
+    <div class="container">
+      <div class="panel-head">
+        <h3>Automatically Clean & Analyze Responses</h3>
+        <div class="row-actions">
+          <button id="runAnalysisBtn" class="btn btn-primary">Run Analysis</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4>Paste CSV or JSON Responses</h4>
+          <p class="muted">Columns supported: <code>rating</code> (1–5), <code>comment</code>, <code>category</code>, <code>userId</code>, <code>timestamp</code></p>
+          <textarea id="rawInput" rows="10" placeholder='Example:
+rating,comment,category,userId,timestamp
+5,"Loved the speed!",Performance,u1,2025-08-10
+1,"App keeps crashing",Stability,u2,2025-08-11
+'></textarea>
+          <div class="input-row">
+            <label for="fillStrategy">Fill missing values with</label>
+            <select id="fillStrategy">
+              <option value="mean">Mean</option>
+              <option value="median">Median</option>
+              <option value="mode">Mode</option>
+              <option value="drop">Drop rows with nulls</option>
+            </select>
+          </div>
+          <div class="input-row">
+            <label><input type="checkbox" id="dedupeToggle" checked> Remove duplicates by <code>userId+comment</code></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>Realtime Processing Log</h4>
+          <div id="processLog" class="log"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="dashboard" class="panel alt">
+    <div class="container">
+      <div class="panel-head">
+        <h3>Interactive Dashboard</h3>
+        <div>
+          <button id="exportBtn" class="btn btn-ghost">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Total Responses</div>
+          <div id="kpiTotal" class="kpi-number">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Average Rating</div>
+          <div id="kpiAvgRating" class="kpi-number">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">% Negative</div>
+          <div id="kpiNegativePct" class="kpi-number">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Top Issue</div>
+          <div id="kpiTopIssue" class="kpi-number">—</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h4>Ratings Distribution</h4>
+          <canvas id="ratingsBar"></canvas>
+        </div>
+        <div class="chart-card">
+          <h4>Sentiment Over Time</h4>
+          <canvas id="sentimentLine"></canvas>
+        </div>
+        <div class="chart-card">
+          <h4>Categories by Negativity</h4>
+          <canvas id="categoryPie"></canvas>
+        </div>
+      </div>
+
+      <div class="suggestions card">
+        <h4>Actionable Suggestions</h4>
+        <ul id="suggestionsList" class="suggestions-list"></ul>
+      </div>
+
+      <div class="card table-card">
+        <div class="table-head">
+          <h4>Cleaned Responses</h4>
+          <input type="search" id="tableSearch" placeholder="Search comments, categories…">
+        </div>
+        <div class="table-wrap">
+          <table id="resultsTable">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Rating</th>
+                <th>Category</th>
+                <th>Sentiment</th>
+                <th>Comment</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody><!-- filled by JS --></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <strong>Smart Survey AI</strong>
+        <p class="muted">© 2025. Lightweight analytics for fast decisions.</p>
+      </div>
+      <div class="foot-links">
+        <a href="#builder">Builder</a>
+        <a href="#templates">Templates</a>
+        <a href="#process">Processing</a>
+        <a href="#dashboard">Dashboard</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
